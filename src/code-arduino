@@ -1,0 +1,103 @@
+#include <Servo.h>
+const int trigPin = 2;
+const int echoPin = 3;
+const int trigPinLeft = 6;
+const int echoPinLeft = 7;
+const int trigPinRight = 4;
+const int echoPinRight = 5;
+
+const int motor1Pin1 = 8; // H-bridge input 1
+const int motor1Pin2 = 9; // H-bridge input 2
+const int servoPin = 10;  // Servo control pin
+int motospeed = 90;
+int motospeedlow = 90;
+
+Servo steeringServo;
+
+long duration;
+long durationLeft;
+long durationRight;
+int distance ;
+int distanceLeft;
+int distanceRight;
+void setup() {
+  Serial.begin(9600);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(trigPinLeft, OUTPUT);
+  pinMode(echoPinLeft, INPUT);
+  pinMode(trigPinRight, OUTPUT);
+  pinMode(echoPinRight, INPUT);
+
+  pinMode(motor1Pin1, OUTPUT);
+  pinMode(motor1Pin2, OUTPUT);
+
+  steeringServo.attach(servoPin);
+
+  // Initialize the steering angle to the center
+ // steeringServo.write(90);
+}
+
+void loop() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration / 29 / 2;
+  Serial.println(distance);
+  digitalWrite(trigPinLeft, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPinLeft, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPinLeft, LOW);
+  durationLeft = pulseIn(echoPinLeft, HIGH);
+  distanceLeft = durationLeft / 29 / 2;
+  Serial.println( distanceLeft);
+  digitalWrite(trigPinRight, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPinRight, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPinRight, LOW);
+  durationRight = pulseIn(echoPinRight, HIGH);
+  distanceRight = durationRight / 29 / 2;
+  Serial.println(distanceRight);
+  // Set a threshold distance for obstacle avoidance
+  int thresholdDistance = 40; // Adjust as needed
+  if (distance < thresholdDistance) {
+    // Obstacle detected in front, make a decision based on side sensors
+    analogWrite(motor1Pin2, motospeedlow);
+    if (distanceLeft > distanceRight) {
+      // Obstacle is closer on the left, steer right
+      analogWrite(motor1Pin2,0);
+      steeringServo.write(35); // Adjust the angle as needed.
+      analogWrite(motor1Pin2, motospeedlow);
+      
+    } else if (distanceLeft < distanceRight) {
+      analogWrite(motor1Pin2,0);
+      steeringServo.write(35); // Adjust the angle as needed.
+      analogWrite(motor1Pin2, motospeedlow);
+      
+    }
+  } else {
+    // No obstacle in front, keep the steering straight
+    steeringServo.write(90); // Adjust the angle as needed.
+    analogWrite(motor1Pin2, motospeed);
+  }
+
+  // Set a threshold distance for stopping or reversing
+  int stopDistance = 10; // Adjust as needed
+
+  if (distance < stopDistance) {
+    // Obstacle detected in front, stop or reverse the motor.
+    steeringServo.write(90);
+    digitalWrite(motor1Pin1, LOW); // Motor input 1 OFF
+    digitalWrite(motor1Pin2, motospeedlow);
+    delay(200);
+  } else {
+    // No obstacle in front, move the motor forward.
+    analogWrite(motor1Pin1, motospeed); // Motor input 1 ON
+    digitalWrite(motor1Pin2, LOW);  // Motor input 2 OFF
+  }
+}
