@@ -28,7 +28,6 @@ void setup() {
   pinMode(echoPinLeft, INPUT);
   pinMode(trigPinRight, OUTPUT);
   pinMode(echoPinRight, INPUT);
-
   pinMode(motor1Pin1, OUTPUT);
   pinMode(motor1Pin2, OUTPUT);
 
@@ -65,39 +64,6 @@ void loop() {
   Serial.println(distanceRight);
   // Set a threshold distance for obstacle avoidance
   int thresholdDistance = 40; // Adjust as needed
-  if (distance < thresholdDistance) {
-    // Obstacle detected in front, make a decision based on side sensors
-    analogWrite(motor1Pin2, motospeedlow);
-    if (distanceLeft > distanceRight) {
-      // Obstacle is closer on the left, steer right
-      analogWrite(motor1Pin2,0);
-      steeringServo.write(35); // Adjust the angle as needed.
-      analogWrite(motor1Pin2, motospeedlow);
-      
-    } else if (distanceLeft < distanceRight) {
-      analogWrite(motor1Pin2,0);
-      steeringServo.write(35); // Adjust the angle as needed.
-      analogWrite(motor1Pin2, motospeedlow);
-      
-    }
-  } else {
-    // No obstacle in front, keep the steering straight
-    steeringServo.write(90); // Adjust the angle as needed.
-    analogWrite(motor1Pin2, motospeed);
-  }
-
-  // Set a threshold distance for stopping or reversing
-  int stopDistance = 10; // Adjust as needed
-
-  if (distance < stopDistance) {
-    // Obstacle detected in front, stop or reverse the motor.
-    steeringServo.write(90);
-    digitalWrite(motor1Pin1, LOW); // Motor input 1 OFF
-    digitalWrite(motor1Pin2, motospeedlow);
-    delay(200);
-  } else {
-    // No obstacle in front, move the motor forward.
-    analogWrite(motor1Pin1, motospeed); // Motor input 1 ON
-    digitalWrite(motor1Pin2, LOW);  // Motor input 2 OFF
-  }
+ 
+  
 }
